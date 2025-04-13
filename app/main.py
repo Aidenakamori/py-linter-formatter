@@ -1,4 +1,6 @@
 import sys
+import subprocess
+import json
 
 
 def format_linter_error(error: dict) -> dict:
@@ -49,38 +51,49 @@ def format_linter_report(linter_report: dict) -> list:
     return formatted_report
 
 
-# Example linter report input
-report_file = {
-    "./test_source_code_2.py": [],
-    "./source_code_2.py": [
-        {
-            "code": "E501",
-            "filename": "./source_code_2.py",
-            "line_number": 18,
-            "column_number": 80,
-            "text": "line too long (99 > 79 characters)",
-            "physical_line": '    return f"I like to filter, rounding, '
-            'doubling, store and decorate numbers: {", ".join(items)}!"',
-        },
-        {
-            "code": "W292",
-            "filename": "./source_code_2.py",
-            "line_number": 18,
-            "column_number": 100,
-            "text": "no newline at end of file",
-            "physical_line": '    return f"I like to filter, rounding, '
-            'doubling, store and decorate numbers: {", ".join(items)}!"',
-        },
-    ],
-}
+def run_flake8(path):
+    """Runs flake8 and returns a report."""
+    try:
+        result = subprocess.run(
+            ["flake8", "--format=json", path],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        report = json.loads(result.stdout)
+        return report
+    except subprocess.CalledProcessError as e:
+        print(f"Flake8 failed: {e}")
+        return {}
+    except json.JSONDecodeError as e:
+        print(f"JSON Decode Error: {e}")
+        return {}
 
-# Process the linter report
-formatted_report = format_linter_report(report_file)
 
-# Check if there are failures and exit with the appropriate code
-if any(file["status"] == "failed" for file in formatted_report):
-    print("Linting errors found. Exiting with code 1.")
-    sys.exit(1)
-else:
-    print("No linting errors. Exiting with code 0.")
-    sys.exit(0)
+if __name__ == "__main__":
+    # 1. Run Flake8
+    flake8_report = {}
+    flake8_report["./app/main.py"] = run_flake8("./app/main.py")
+    flake8_report["./linter_script.py"] = run_flake8("./linter_script.py")
+
+    # 2. Format Flake8 Report
+    formatted_report = format_linter_report(flake8_report)
+
+    # 3. Check for Linting Failures
+    linting_failed = any(file["status"] == "failed" for file in formatted_report)
+
+    # 4. Run Pytest
+    pytest_result = subprocess.run(["pytest"], capture_output=True, text=True)
+    pytest_failed = pytest_result.returncode != 0
+
+    # 5. Determine Final Exit Code
+    if linting_failed or pytest_failed:
+        print("Linting and/or tests failed. Exiting with code 1.")
+        if linting_failed:
+            print("Linting Errors")
+        if pytest_failed:
+            print("Pytest Errors")
+        sys.exit(1)
+    else:
+        print("Linting and tests passed. Exiting with code 0.")
+        sys.exit(0)
