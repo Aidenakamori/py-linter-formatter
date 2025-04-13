@@ -30,7 +30,7 @@ jobs:
 
       - name: Activate virtual environment
         shell: pwsh
-        run: . ./.venv/Scripts/activate
+        run: . ./.venv/Scripts/activate  # Corrected activation command
 
       - name: Lint with flake8
         run: flake8 app/
