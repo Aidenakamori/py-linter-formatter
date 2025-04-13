@@ -51,7 +51,7 @@ def format_linter_report(linter_report: dict) -> list:
     return formatted_report
 
 
-def run_flake8(path):
+def run_flake8(path: str) -> dict:
     """Runs flake8 and returns a report.
 
     Returns an empty dictionary if flake8 fails (but logs the error).
@@ -66,17 +66,22 @@ def run_flake8(path):
         if result.returncode != 0:
             print(f"Flake8 found errors in {path}:")
             print(result.stderr)  # Print flake8's output
+
         if result.stdout:
             try:
                 report = json.loads(result.stdout)
-            except json.JSONDecodeError:
-                print(f"JSONDecodeError: {result.stdout}")
+            except json.JSONDecodeError as e:
+                print(f"JSONDecodeError in {path}: {e}")
+                print(f"Flake8 output was: {result.stdout}") # Print the full output
                 return {}
         else:
             report = {}
         return report
     except FileNotFoundError:
         print(f"Error: flake8 not found. Is it installed?")
+        return {}
+    except Exception as e:
+        print(f"An unexpected error occurred while running flake8 on {path}: {e}")
         return {}
 
 
@@ -93,8 +98,19 @@ if __name__ == "__main__":
     linting_failed = any(file["status"] == "failed" for file in formatted_report)
 
     # 4. Run Pytest
-    pytest_result = subprocess.run(["pytest"], capture_output=True, text=True)
-    pytest_failed = pytest_result.returncode != 0
+    try:
+        pytest_result = subprocess.run(["pytest"], capture_output=True, text=True, check=False)
+        pytest_failed = pytest_result.returncode != 0
+        if pytest_failed:
+            print("Pytest errors:")
+            print(pytest_result.stderr)
+    except FileNotFoundError:
+        print("Error: pytest not found. Is it installed?")
+        pytest_failed = True
+    except Exception as e:
+        print(f"An unexpected error occurred while running pytest: {e}")
+        pytest_failed = True
+
 
     # 5. Determine Final Exit Code
     if linting_failed or pytest_failed:
