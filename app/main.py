@@ -2,15 +2,7 @@ import sys
 
 
 def format_linter_error(error: dict) -> dict:
-    """
-    Formats a single linter error into a structured dictionary.
-
-    Args:
-        error (dict): A dictionary containing the raw error information.
-
-    Returns:
-        dict: A dictionary with structured error details.
-    """
+    """Formats a single linter error into a structured dictionary."""
     return {
         "code": error.get("code"),
         "description": error.get("text"),
@@ -22,23 +14,19 @@ def format_linter_error(error: dict) -> dict:
 
 
 def format_linter_report(linter_report: dict) -> list:
-    """
-    Formats a linter report dictionary into a structured list.
+    """Formats a linter report dictionary into a structured list.
 
     Args:
-        linter_report (dict): Dictionary with file paths as keys and error lists
-                              as values.
+        linter_report (dict): Dictionary with file paths as keys and error
+            lists as values.
 
     Returns:
-        list: A list of formatted dictionaries with path, status, and detailed
-              errors.
+        list: A list of formatted dictionaries with path, status, and
+            detailed errors.
     """
     formatted_report = []
     for file_path, errors in linter_report.items():
-        if errors:
-            status = "failed"
-        else:
-            status = "passed"
+        status = "failed" if errors else "passed"
 
         formatted_errors = []
         for error in errors:
@@ -71,8 +59,8 @@ report_file = {
             "line_number": 18,
             "column_number": 80,
             "text": "line too long (99 > 79 characters)",
-            "physical_line": '    return f"I like to filter, rounding, doubling, '
-            "store and decorate numbers: {', '.join(items)}!\"",
+            "physical_line": '    return f"I like to filter, rounding, '
+            'doubling, store and decorate numbers: {", ".join(items)}!"',
         },
         {
             "code": "W292",
@@ -80,8 +68,8 @@ report_file = {
             "line_number": 18,
             "column_number": 100,
             "text": "no newline at end of file",
-            "physical_line": '    return f"I like to filter, rounding, doubling, '
-            "store and decorate numbers: {', '.join(items)}!\"",
+            "physical_line": '    return f"I like to filter, rounding, '
+            'doubling, store and decorate numbers: {", ".join(items)}!"',
         },
     ],
 }
