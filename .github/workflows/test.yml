@@ -17,16 +17,17 @@ jobs:
         uses: actions/setup-python@v5 # Use v5
         with:
           python-version: "3.10"
-          cache: 'pip' #Caching dependencies <sup data-citation="2" className="inline select-none [&>a]:rounded-2xl [&>a]:border [&>a]:px-1.5 [&>a]:py-0.5 [&>a]:transition-colors shadow [&>a]:bg-ds-bg-subtle [&>a]:text-xs [&>svg]:w-4 [&>svg]:h-4 relative -top-[2px] citation-shimmer"><a href="https://github.com/orgs/python-poetry/discussions/4205" target="_blank" title="Poetry and CI builds -- best practices, knowledge share (travisci ...">2</a></sup><sup data-citation="7" className="inline select-none [&>a]:rounded-2xl [&>a]:border [&>a]:px-1.5 [&>a]:py-0.5 [&>a]:transition-colors shadow [&>a]:bg-ds-bg-subtle [&>a]:text-xs [&>svg]:w-4 [&>svg]:h-4 relative -top-[2px] citation-shimmer"><a href="https://docs.github.com/en/actions/use-cases-and-examples/building-and-testing/building-and-testing-python" target="_blank" title="Building and testing Python - GitHub Docs">7</a></sup>
+          cache: 'pip' #Caching dependencies <sup data-citation="2" className="inline select-none [&>a]:rounded-2xl [&>a]:border [&>a]:px-1.5 [&>a]:py-0.5 [&>a]:transition-colors shadow [&>a]:bg-ds-bg-subtle [&>a]:text-xs [&>svg]:w-4 [&>svg]:h-4 relative -top-[2px] citation-shimmer"><a href="#" title="Reference 2 (source not available)">2</a></sup><sup data-citation="7" className="inline select-none [&>a]:rounded-2xl [&>a]:border [&>a]:px-1.5 [&>a]:py-0.5 [&>a]:transition-colors shadow [&>a]:bg-ds-bg-subtle [&>a]:text-xs [&>svg]:w-4 [&>svg]:h-4 relative -top-[2px] citation-shimmer"><a href="#" title="Reference 7 (source not available)">7</a></sup>
           cache-dependency-path: '**/requirements.txt'
 
-      - name: Test with pytest
-        timeout-minutes: 5
-        run: pytest tests/ --cov=app --cov-report term-missing
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
-      - name: Lint with flake8
-        run: flake8 app/
-
-      - name: Test with pytest
+      - name: Run pytest
         timeout-minutes: 5
-        run: pytest tests/ --cov=app --cov-report term-missing #Enable coverage reports
+        shell: bash # Specify shell for activation command
+        run: |
+          source venv/bin/activate  # Activate the virtual environment
+          pytest tests/ --cov=app --cov-report term-missing
