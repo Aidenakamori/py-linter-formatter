@@ -52,21 +52,31 @@ def format_linter_report(linter_report: dict) -> list:
 
 
 def run_flake8(path):
-    """Runs flake8 and returns a report."""
+    """Runs flake8 and returns a report.
+
+    Returns an empty dictionary if flake8 fails (but logs the error).
+    """
     try:
         result = subprocess.run(
             ["flake8", "--format=json", path],
             capture_output=True,
             text=True,
-            check=True,
+            check=False,  # Changed to False
         )
-        report = json.loads(result.stdout)
+        if result.returncode != 0:
+            print(f"Flake8 found errors in {path}:")
+            print(result.stderr)  # Print flake8's output
+        if result.stdout:
+            try:
+                report = json.loads(result.stdout)
+            except json.JSONDecodeError:
+                print(f"JSONDecodeError: {result.stdout}")
+                return {}
+        else:
+            report = {}
         return report
-    except subprocess.CalledProcessError as e:
-        print(f"Flake8 failed: {e}")
-        return {}
-    except json.JSONDecodeError as e:
-        print(f"JSON Decode Error: {e}")
+    except FileNotFoundError:
+        print(f"Error: flake8 not found. Is it installed?")
         return {}
 
 
