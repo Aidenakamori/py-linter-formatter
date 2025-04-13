@@ -1,13 +1,4 @@
 def format_linter_error(error: dict) -> dict:
-    """
-    Formats a linter error into a dictionary with specific keys.
-
-    Args:
-        error (dict): Dictionary containing error details.
-
-    Returns:
-        dict: Formatted dictionary with keys `code`, `description`, and `location`.
-    """
     return {
         "code": error.get("code"),
         "description": error.get("text"),
