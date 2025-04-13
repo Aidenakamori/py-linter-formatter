@@ -1,26 +1,67 @@
 import sys
 
+
+def format_linter_error(error: dict) -> dict:
+    """
+    Formats a single linter error into a structured dictionary.
+
+    Args:
+        error (dict): A dictionary containing the raw error information.
+
+    Returns:
+        dict: A dictionary with structured error details.
+    """
+    return {
+        "code": error.get("code"),
+        "description": error.get("text"),
+        "location": {
+            "line": error.get("line_number"),
+            "column": error.get("column_number"),
+        },
+    }
+
+
 def format_linter_report(linter_report: dict) -> list:
-    # Your existing formatting logic
-    formatted_report = [
-        {
-            "path": file_path,
-            "status": "failed" if errors else "passed",
-            "errors": [
-                {
-                    "line": error.get("line_number"),
-                    "column": error.get("column_number"),
-                    "message": error.get("text"),
-                    "name": error.get("code"),
-                    "source": "flake8",
-                }
-                for error in errors
-            ],
-        }
-        for file_path, errors in linter_report.items()
-    ]
+    """
+    Formats a linter report dictionary into a structured list.
+
+    Args:
+        linter_report (dict): Dictionary with file paths as keys and error lists
+                              as values.
+
+    Returns:
+        list: A list of formatted dictionaries with path, status, and detailed
+              errors.
+    """
+    formatted_report = []
+    for file_path, errors in linter_report.items():
+        if errors:
+            status = "failed"
+        else:
+            status = "passed"
+
+        formatted_errors = []
+        for error in errors:
+            formatted_error = {
+                "line": error.get("line_number"),
+                "column": error.get("column_number"),
+                "message": error.get("text"),
+                "name": error.get("code"),
+                "source": "flake8",
+            }
+            formatted_errors.append(formatted_error)
+
+        formatted_report.append(
+            {
+                "path": file_path,
+                "status": status,
+                "errors": formatted_errors,
+            }
+        )
     return formatted_report
 
+
+# Example linter report input
 report_file = {
     "./test_source_code_2.py": [],
     "./source_code_2.py": [
@@ -33,70 +74,25 @@ report_file = {
             "physical_line": '    return f"I like to filter, rounding, doubling, '
             "store and decorate numbers: {', '.join(items)}!\"",
         },
+        {
+            "code": "W292",
+            "filename": "./source_code_2.py",
+            "line_number": 18,
+            "column_number": 100,
+            "text": "no newline at end of file",
+            "physical_line": '    return f"I like to filter, rounding, doubling, '
+            "store and decorate numbers: {', '.join(items)}!\"",
+        },
     ],
 }
+
+# Process the linter report
 formatted_report = format_linter_report(report_file)
 
-# Check if there are any failures and exit appropriately
+# Check if there are failures and exit with the appropriate code
 if any(file["status"] == "failed" for file in formatted_report):
-    print("Linting errors found.")
+    print("Linting errors found. Exiting with code 1.")
     sys.exit(1)
 else:
-    print("No linting errors.")
+    print("No linting errors. Exiting with code 0.")
     sys.exit(0)
-
-
-def format_single_linter_file(file_path: str, errors: list) -> dict:
-    """
-    Formats linter errors for a specific file into a structured dictionary.
-
-    Args:
-        file_path (str): The path to the file where errors were found.
-        errors (list): A list of error dictionaries.
-
-    Returns:
-        dict: Formatted dictionary with file path, status, and error details.
-    """
-    return {
-        "errors": [
-            {
-                "line": error.get("line_number"),
-                "column": error.get("column_number"),
-                "message": error.get("text"),
-                "name": error.get("code"),
-                "source": "flake8",  # Presuming the linter source is flake8
-            }
-            for error in errors
-        ],
-        "path": file_path,
-        "status": "failed" if errors else "passed",  # Status logic
-    }
-
-
-def format_linter_report(linter_report: dict) -> list:
-    """
-    Formats a linter report dictionary into a structured list.
-
-    Args:
-        linter_report (dict): Dictionary with file paths as keys and error lists as values.
-
-    Returns:
-        list: A list of formatted dictionaries with path, status, and detailed errors.
-    """
-    return [
-        {
-            "path": file_path,
-            "status": "failed" if errors else "passed",
-            "errors": [
-                {
-                    "line": error.get("line_number"),
-                    "column": error.get("column_number"),
-                    "message": error.get("text"),
-                    "name": error.get("code"),
-                    "source": "flake8",
-                }
-                for error in errors
-            ],
-        }
-        for file_path, errors in linter_report.items()
-    ]
