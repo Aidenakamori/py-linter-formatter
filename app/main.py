@@ -1,3 +1,33 @@
+def format_linter_error(error: dict) -> dict:
+    """Formats a single linter error."""
+    return {
+        "line": error["line_number"],
+        "column": error["column_number"],
+        "message": error["text"],
+        "name": error["code"],
+        "source": "flake8",
+    }
+
+
+def format_single_linter_file(file_path: str, errors: list[dict]) -> dict:
+    """Formats the linter errors for a single file."""
+    formatted_errors = [format_linter_error(error) for error in errors]
+    status = "failed" if formatted_errors else "passed"
+    return {
+        "errors": formatted_errors,
+        "path": file_path,
+        "status": status,
+    }
+
+
+def format_linter_report(errors: dict) -> list[dict]:
+    """Formats the entire linter report."""
+    return [
+        format_single_linter_file(file_path, errors[file_path])
+        for file_path in errors
+    ]
+
+
 def process_data(data: list[int | float]) -> str:
     """Processes some data.
 
