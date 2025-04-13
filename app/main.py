@@ -1,4 +1,3 @@
-# app/main.py
 def process_data(data: list[int | float]) -> str:
     """Processes some data.
 
@@ -26,12 +25,21 @@ def greet(name: str) -> str:
 
 def log_message(message: str) -> None:
     """Logs a message."""
-    print(f"Logging: {message}")  # Fixed: Added two spaces before comment
+    print(f"Logging: {message}")
 
 
 def file_process(path: str) -> None:
     """Processes the file under the given path"""
-    print("Processing path")  # Fixed: Added two spaces before comment
+    try:
+        with open(path, 'r') as file:
+            content = file.read()
+            print(f"Processing path: {path}")
+            # Process the content here (e.g., parse, analyze, etc.)
+            print(f"File content: {content}")  # example
+    except FileNotFoundError:
+        print(f"Error: File not found at path: {path}")
+    except Exception as file_exception:
+        print(f"Error processing file: {file_exception}")
 
 
 if __name__ == "__main__":
@@ -41,17 +49,17 @@ if __name__ == "__main__":
         # Simulate reading data from command line arguments
         if len(sys.argv) > 1:
             data_strings = sys.argv[1:]
-            data = [float(x) for x in data_strings]
+            input_data = [float(x) for x in data_strings]
         else:
             # Provide default data
-            data = [1.0, 2.0, 3.0]  # Default data if no arguments are provided
+            input_data = [1.0, 2.0, 3.0]  # Default data if no arguments are provided
 
-        result = process_data(data)
+        result = process_data(input_data)
         print(result)
         sys.exit(0)  # Success
-    except ValueError as e:
-        print(f"Error: {e}")
+    except ValueError as file_exception2:
+        print(f"Error: {file_exception2}")
         sys.exit(1)  # Failure
-    except Exception as e:
-        print(f"Unexpected error: {e}")
+    except Exception as ex:
+        print(f"Unexpected error: {ex}")
         sys.exit(1)
