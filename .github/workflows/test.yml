@@ -3,31 +3,38 @@ name: Test
 on:
   pull_request:
     branches:
-      - "master"  # Or main, if that's your primary branch
+      - "master"
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest  # Use windows-latest for PowerShell
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4  # Use v4
+        uses: actions/checkout@v4
 
       - name: Set up Python 3.10
-        uses: actions/setup-python@v5 # Use v5
+        uses: actions/setup-python@v5
         with:
           python-version: "3.10"
-          cache: 'pip' #Caching dependencies <sup data-citation="2" className="inline select-none [&>a]:rounded-2xl [&>a]:border [&>a]:px-1.5 [&>a]:py-0.5 [&>a]:transition-colors shadow [&>a]:bg-ds-bg-subtle [&>a]:text-xs [&>svg]:w-4 [&>svg]:h-4 relative -top-[2px] citation-shimmer"><a href="#" title="Reference 2 (source not available)">2</a></sup><sup data-citation="7" className="inline select-none [&>a]:rounded-2xl [&>a]:border [&>a]:px-1.5 [&>a]:py-0.5 [&>a]:transition-colors shadow [&>a]:bg-ds-bg-subtle [&>a]:text-xs [&>svg]:w-4 [&>svg]:h-4 relative -top-[2px] citation-shimmer"><a href="#" title="Reference 7 (source not available)">7</a></sup>
+          cache: 'pip'
           cache-dependency-path: '**/requirements.txt'
+
+      - name: Set Execution Policy
+        run: Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run pytest
+      - name: Activate virtual environment
+        shell: pwsh
+        run: . ./.venv/Scripts/activate
+
+      - name: Lint with flake8
+        run: flake8 app/
+
+      - name: Test with pytest
         timeout-minutes: 5
-        shell: bash # Specify shell for activation command
-        run: |
-          source venv/bin/activate  # Activate the virtual environment
-          pytest tests/ --cov=app --cov-report term-missing
+        run: pytest tests/ --cov=app --cov-report term-missing
